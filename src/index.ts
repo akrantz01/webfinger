@@ -11,17 +11,9 @@
  * Learn more at https://developers.cloudflare.com/workers/
  */
 
+import type { Resource, ResponseBody } from './types';
+
 const OIDC_ISSUER_REL = "http://openid.net/specs/connect/1.0/issuer";
-
-interface Link {
-	rel: string;
-	href: string;
-}
-
-interface Resource {
-	scheme: string;
-	name: string;
-}
 
 function parseResource(raw: string): Resource {
 	const resource = new URL(raw);
@@ -41,14 +33,17 @@ export default {
 		if (resource.scheme !== "acct") return Response.json({}, { status: 404 });
 		if (!resource.name.endsWith("@" + url.hostname)) return Response.json({}, { status: 404 });
 
-		const links: Link[] = [];
+		const body: ResponseBody = {
+			subject: `${resource.scheme}:${resource.name}`,
+			links: [],
+		};
 
 		const rels = url.searchParams.getAll("rel");
 		if (rels.length === 0 || rels.includes(OIDC_ISSUER_REL)) {
-			links.push({ rel: OIDC_ISSUER_REL, href: env.OIDC_ISSUER_URL })
+			body.links.push({ rel: OIDC_ISSUER_REL, href: env.OIDC_ISSUER_URL })
 		}
 
-		return Response.json({ subject: `${resource.scheme}:${resource.name}`, links }, {
+		return Response.json(body, {
 			status: 200,
 			headers: { 'Content-Type': 'application/jrd+json' }
 		});
