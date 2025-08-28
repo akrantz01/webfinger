@@ -34,6 +34,7 @@ function parseResource(raw: string): Resource {
 export default {
 	async fetch(request, env, ctx): Promise<Response> {
 		const url = new URL(request.url);
+		if (url.pathname !== "/.well-known/webfinger") return Response.json({}, { status: 404 });
 		if (!url.searchParams.has("resource")) return Response.json({ error: "missing resource" }, { status: 400 });
 
 		const resource = parseResource(url.searchParams.get("resource")!);
