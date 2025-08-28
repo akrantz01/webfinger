@@ -16,7 +16,7 @@ jobs:
           cache: pnpm
       - run: pnpm install
 
-      - run: pnpm worker build
+      - run: pnpm wrangler build
 
   test:
     name: Unit Tests
